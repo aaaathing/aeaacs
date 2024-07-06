@@ -1,3 +1,6 @@
 Flask
 gunicorn
 google-cloud-storage
+flask-sqlalchemy
+flask-login
+uuid
