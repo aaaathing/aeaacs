@@ -1,9 +1,28 @@
-from flask import Flask, request, render_template, redirect
+# curl -u name:pwd -i -X GET http://127.0.0.1:5000/profile
+
+
+import uuid
+from flask import Flask, request, render_template, redirect, g, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin, LoginManager, login_user, login_required, current_user
-import uuid
+#from flask_httpauth import HTTPBasicAuth
+#auth = HTTPBasicAuth()
 db = SQLAlchemy()
+
+"""
+import mysql.connector
+
+mydb = mysql.connector.connect(
+  host="34.44.86.36",
+  user="gleaming-terra-425802-r2:us-central1:my-sql-db",
+  password='.$~v"\\DS%m/c1VI"'
+)
+
+print(mydb)
+exit()
+"""
+
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret-key-goes-here'
@@ -11,7 +30,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
 
 db.init_app(app)
 
-class User(UserMixin,db.Model):
+class User(UserMixin, db.Model):
 	userid = db.Column(db.String(100), primary_key=True) # primary keys are required by SQLAlchemy
 	name = db.Column(db.String(1000), unique=True)
 	password = db.Column(db.String(100))
@@ -19,32 +38,46 @@ class User(UserMixin,db.Model):
 	def get_id(e):
 		return e.userid
 
+
 login_manager = LoginManager()
-login_manager.login_view = 'auth.login'
 login_manager.init_app(app)
-
-@app.route('/login')
-def login():
-	return render_template('login.html')
-
-@app.route('/profile')
-@login_required
-def profile():
-	return current_user.name
 
 @login_manager.user_loader
 def load_user(user_id):
 	# since the user_id is just the primary key of our user table, use it in the query for the user
 	return User.query.get(user_id)
 
-@app.route('/signup', methods=['POST'])
-def signup_post():
+@login_manager.request_loader
+def load_user_from_request(request):
+	if request.authorization:
+		user = User.query.filter_by(name=request.authorization.username).first()
+		if user and check_password_hash(user.password, request.authorization.password):
+			return user
+	return None
+
+
+@app.route('/')
+def login():
+	return render_template('login.html')
+
+
+@app.route('/profile')
+@login_required
+def get_resource():
+    return jsonify({ 'name': current_user.name })
+
+
+def signup(request):
 	# code to validate and add user to database goes here
 	name = request.form.get("name")
-	password =request.form.get("password")
+	password = request.form.get("password")
 
+	if not name:
+		return ("wheres your name", None)
+	if not password:
+		return ("wheres your password", None)
 	if User.query.filter_by(name=name).first(): # if a user is found, we want to redirect back to signup page so user can try again
-		return "bad name"
+		return ("bad name", None)
 
 	# create a new user with the form data. Hash the password so the plaintext version isn't saved.
 	new_user = User( userid=str(uuid.uuid4().fields[-1]),name=name, password=generate_password_hash(password, method='pbkdf2:sha256'),text="")
@@ -52,6 +85,25 @@ def signup_post():
 	# add the new user to the database
 	db.session.add(new_user)
 	db.session.commit()
+	
+	return ("success", new_user)
+
+
+@app.route('/api/signup', methods=['POST'])
+def api_signup_post():
+	(message, new_user) = signup(request)
+
+	if not new_user:
+		return jsonify({'error':message})
+
+	return jsonify({'success':True})
+
+@app.route('/signup', methods=['POST'])
+def signup_post():
+	(message, new_user) = signup(request)
+
+	if not new_user:
+		return message
 
 	login_user(new_user, remember=True)
 	return redirect("/profile")
@@ -59,7 +111,7 @@ def signup_post():
 @app.route('/login', methods=['POST'])
 def login_post():
 	name = request.form.get("name")
-	password =request.form.get("password")
+	password = request.form.get("password")
 
 	user = User.query.filter_by(name=name).first()
 
