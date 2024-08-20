@@ -50,7 +50,7 @@ def load_user(user_id):
 @login_manager.request_loader
 def load_user_from_request(request):
 	if request.authorization:
-		user = User.query.filter_by(name=request.authorization.username).first()
+		user = load_user(request.authorization.username)
 		if user and check_password_hash(user.password, request.authorization.password):
 			return user
 	return None
@@ -94,9 +94,9 @@ def api_signup_post():
 	(message, new_user) = signup(request)
 
 	if not new_user:
-		return jsonify({'error':message})
+		return jsonify({'success':False,'error':message})
 
-	return jsonify({'success':True})
+	return jsonify({'success':True,'user_id':new_user.userid})
 
 @app.route('/signup', methods=['POST'])
 def signup_post():
@@ -108,8 +108,7 @@ def signup_post():
 	login_user(new_user, remember=True)
 	return redirect("/profile")
 
-@app.route('/login', methods=['POST'])
-def login_post():
+def do_login(request):
 	name = request.form.get("name")
 	password = request.form.get("password")
 
@@ -118,12 +117,29 @@ def login_post():
 	# check if the user actually exists
 	# take the user-supplied password, hash it, and compare it to the hashed password in the database
 	if not user or not check_password_hash(user.password, password):
-		return "not user or not password"
+		return ("not user or not password",None)
+	
+	return ("success",user)
+
+@app.route('/login', methods=['POST'])
+def login_post():
+	(message, user) = signup(request)
+
+	if not user:
+		return message
 
 	# if the above check passes, then we know the user has the right credentials
 	login_user(user, remember=True)
 	return redirect("/profile")
 
+@app.route('/api/login', methods=['POST'])
+def api_signup_post():
+	(message, user) = signup(request)
+
+	if not user:
+		return jsonify({'success':False,'error':message})
+
+	return jsonify({'success':True,'user_id':user.userid})
 
 with app.app_context():
 	db.create_all()
