@@ -116,14 +116,14 @@ def do_login(request):
 
 	# check if the user actually exists
 	# take the user-supplied password, hash it, and compare it to the hashed password in the database
-	if not user or not check_password_hash(user.password, password):
+	if not user or not password or not check_password_hash(user.password, password):
 		return ("not user or not password",None)
 	
 	return ("success",user)
 
 @app.route('/login', methods=['POST'])
 def login_post():
-	(message, user) = login(request)
+	(message, user) = do_login(request)
 
 	if not user:
 		return message
@@ -134,7 +134,7 @@ def login_post():
 
 @app.route('/api/login', methods=['POST'])
 def api_login_post():
-	(message, user) = login(request)
+	(message, user) = do_login(request)
 
 	if not user:
 		return jsonify({'success':False,'error':message})
