@@ -123,7 +123,7 @@ def do_login(request):
 
 @app.route('/login', methods=['POST'])
 def login_post():
-	(message, user) = signup(request)
+	(message, user) = login(request)
 
 	if not user:
 		return message
@@ -133,8 +133,8 @@ def login_post():
 	return redirect("/profile")
 
 @app.route('/api/login', methods=['POST'])
-def api_signup_post():
-	(message, user) = signup(request)
+def api_login_post():
+	(message, user) = login(request)
 
 	if not user:
 		return jsonify({'success':False,'error':message})
