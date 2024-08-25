@@ -75,11 +75,14 @@ def signup(request):
 	# code to validate and add user to database goes here
 	username = request.form.get("username")
 	password = request.form.get("password")
+	verify_password = request.form.get("verify_password")
 
 	if not username:
 		return ("wheres your username", None)
 	if not password:
 		return ("wheres your password", None)
+	if password != verify_password:
+		return ("wrong password", None)
 	if User.query.filter_by(username=username).first(): # if a user is found, we want to redirect back to signup page so user can try again
 		return ("bad username", None)
 
