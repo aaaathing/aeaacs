@@ -65,10 +65,18 @@ def login():
 	return render_template('login.html')
 
 
-@app.route('/profile')
+@app.route('/api/get_user_info')
 @login_required
 def get_resource():
-    return jsonify({ 'username': current_user.username })
+    return jsonify({
+			'user_id': current_user.userid,
+			'username': current_user.username,
+			'name': current_user.name,
+			'text': current_user.text,
+			'hobbies': current_user.hobbies,
+			'birthday': current_user.birthday,
+			'school': current_user.school
+		})
 
 
 def signup(request):
@@ -155,6 +163,7 @@ def save_user_info():
 	current_user.hobbies = request.form.get("hobbies")
 	current_user.birthday = request.form.get("birthday")
 	current_user.school = request.form.get("school")
+	current_user.name = request.form.get("name")
 	db.session.commit()
 	return jsonify({'success':True})
 
