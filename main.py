@@ -36,9 +36,9 @@ class User(UserMixin, db.Model):
 	password = db.Column(db.String(100))
 	name = db.Column(db.String(1000), nullable=True)
 	text = db.Column(db.String(100000), nullable=True)
-	hobbies = db.Column(db.String(100000), nullable=True)
-	birthday = db.Column(db.String(100000), nullable=True)
-	school = db.Column(db.String(100000), nullable=True)
+	hobbies = db.Column(db.String(1000), nullable=True)
+	birthday = db.Column(db.String(100), nullable=True)
+	school = db.Column(db.String(100), nullable=True)
 	def get_id(e):
 		return e.userid
 
@@ -84,7 +84,7 @@ def signup(request):
 		return ("bad username", None)
 
 	# create a new user with the form data. Hash the password so the plaintext version isn't saved.
-	new_user = User( userid=str(uuid.uuid4().fields[-1]),username=username, password=generate_password_hash(password, method='pbkdf2:sha256'))
+	new_user = User( userid=str(uuid.uuid4().fields[-1]), username=username, password=generate_password_hash(password, method='pbkdf2:sha256'))
 
 	# add the new user to the database
 	db.session.add(new_user)
