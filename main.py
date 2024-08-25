@@ -32,9 +32,13 @@ db.init_app(app)
 
 class User(UserMixin, db.Model):
 	userid = db.Column(db.String(100), primary_key=True) # primary keys are required by SQLAlchemy
-	name = db.Column(db.String(1000), unique=True)
+	username = db.Column(db.String(1000), unique=True)
 	password = db.Column(db.String(100))
-	text = db.Column(db.String(1000))
+	name = db.Column(db.String(1000), nullable=True)
+	text = db.Column(db.String(100000), nullable=True)
+	hobbies = db.Column(db.String(1000), nullable=True)
+	birthday = db.Column(db.String(100), nullable=True)
+	school = db.Column(db.String(100), nullable=True)
 	def get_id(e):
 		return e.userid
 
@@ -64,23 +68,26 @@ def login():
 @app.route('/profile')
 @login_required
 def get_resource():
-    return jsonify({ 'name': current_user.name })
+    return jsonify({ 'username': current_user.username })
 
 
 def signup(request):
 	# code to validate and add user to database goes here
-	name = request.form.get("name")
+	username = request.form.get("username")
 	password = request.form.get("password")
+	verify_password = request.form.get("verify_password")
 
-	if not name:
-		return ("wheres your name", None)
+	if not username:
+		return ("wheres your username", None)
 	if not password:
 		return ("wheres your password", None)
-	if User.query.filter_by(name=name).first(): # if a user is found, we want to redirect back to signup page so user can try again
-		return ("bad name", None)
+	if password != verify_password:
+		return ("wrong password", None)
+	if User.query.filter_by(username=username).first(): # if a user is found, we want to redirect back to signup page so user can try again
+		return ("bad username", None)
 
 	# create a new user with the form data. Hash the password so the plaintext version isn't saved.
-	new_user = User( userid=str(uuid.uuid4().fields[-1]),name=name, password=generate_password_hash(password, method='pbkdf2:sha256'),text="")
+	new_user = User( userid=str(uuid.uuid4().fields[-1]), username=username, password=generate_password_hash(password, method='pbkdf2:sha256'))
 
 	# add the new user to the database
 	db.session.add(new_user)
@@ -109,10 +116,10 @@ def signup_post():
 	return redirect("/profile")
 
 def do_login(request):
-	name = request.form.get("name")
+	username = request.form.get("username")
 	password = request.form.get("password")
 
-	user = User.query.filter_by(name=name).first()
+	user = User.query.filter_by(username=username).first()
 
 	# check if the user actually exists
 	# take the user-supplied password, hash it, and compare it to the hashed password in the database
@@ -140,6 +147,16 @@ def api_login_post():
 		return jsonify({'success':False,'error':message})
 
 	return jsonify({'success':True,'user_id':user.userid})
+
+@app.route('/api/save_user_info', methods=['POST'])
+@login_required
+def save_user_info():
+	current_user.text = request.form.get("text")
+	current_user.hobbies = request.form.get("hobbies")
+	current_user.birthday = request.form.get("birthday")
+	current_user.school = request.form.get("school")
+	db.session.commit()
+	return jsonify({'success':True})
 
 with app.app_context():
 	db.create_all()
