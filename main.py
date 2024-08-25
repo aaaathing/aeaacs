@@ -35,10 +35,10 @@ class User(UserMixin, db.Model):
 	username = db.Column(db.String(1000), unique=True)
 	password = db.Column(db.String(100))
 	name = db.Column(db.String(1000), nullable=True)
-	text = db.Column(db.String(1000), nullable=True)
-	text_hobbies = db.Column(db.String(1000), nullable=True)
-	text_birthday = db.Column(db.String(1000), nullable=True)
-	text_school = db.Column(db.String(1000), nullable=True)
+	text = db.Column(db.String(100000), nullable=True)
+	hobbies = db.Column(db.String(100000), nullable=True)
+	birthday = db.Column(db.String(100000), nullable=True)
+	school = db.Column(db.String(100000), nullable=True)
 	def get_id(e):
 		return e.userid
 
@@ -149,9 +149,9 @@ def api_login_post():
 @login_required
 def save_user_info():
 	current_user.text = request.form.get("text")
-	current_user.text_hobbies = request.form.get("hobbies")
-	current_user.text_birthday = request.form.get("birthday")
-	current_user.text_school = request.form.get("school")
+	current_user.hobbies = request.form.get("hobbies")
+	current_user.birthday = request.form.get("birthday")
+	current_user.school = request.form.get("school")
 	db.session.commit()
 	return jsonify({'success':True})
 
