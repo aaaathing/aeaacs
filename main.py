@@ -170,7 +170,9 @@ def save_user_info():
 @app.route('/api/send_text')
 @login_required
 def send_text():
+	question = request.form.get("question")
 	return jsonify({ 'success':True, 'answers':['e','eeeeeee','hhjxcvfnxvk'] })
+	#TODO: call chatgpt api
 
 with app.app_context():
 	db.create_all()
