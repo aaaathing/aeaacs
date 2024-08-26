@@ -42,6 +42,12 @@ class User(UserMixin, db.Model):
 	def get_id(e):
 		return e.userid
 
+class Answer(db.Model):
+	answerid = db.Column(db.String(100), primary_key=True)
+	userid = db.Column(db.String(100))
+	question = db.Column(db.String(100000))
+	chosen_answer = db.Column(db.String(100000))
+
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -167,12 +173,21 @@ def save_user_info():
 	db.session.commit()
 	return jsonify({'success':True})
 
-@app.route('/api/send_text')
+@app.route('/api/send_text', methods=['POST'])
 @login_required
 def send_text():
 	question = request.form.get("question")
 	#TODO: call chatgpt api
 	return jsonify({ 'success':True, 'answers':['e','eeeeeee','hhjxcvfnxvk'] })
+
+@app.route('/api/save_answer', methods=['POST'])
+@login_required
+def save_answer():
+	chosen_answer = request.form.get("chosen_answer")
+	question = request.form.get("question")
+	db.session.add(Answer(answerid=str(uuid.uuid4().fields[-1]), userid=current_user.userid, question=question, chosen_answer=chosen_answer ))
+	db.session.commit()
+	return jsonify({ 'success':True })
 
 with app.app_context():
 	db.create_all()
