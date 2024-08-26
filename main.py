@@ -167,6 +167,11 @@ def save_user_info():
 	db.session.commit()
 	return jsonify({'success':True})
 
+@app.route('/api/send_text')
+@login_required
+def send_text():
+	return jsonify({ 'success':True, 'answers':['e','eeeeeee','hhjxcvfnxvk'] })
+
 with app.app_context():
 	db.create_all()
 if __name__ == '__main__':
