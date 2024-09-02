@@ -183,13 +183,13 @@ def send_text():
 
 	info = ""
 	if current_user.name:
-		info += "\n Name: "+current_user.name
+		info += "\n Name: " + current_user.name
 	if current_user.hobbies:
-		info += "\n Hobbies: "+current_user.hobbies
+		info += "\n Hobbies: " + current_user.hobbies
 	if current_user.school:
-		info += "\n School: "+current_user.school
+		info += "\n School: " + current_user.school
 	if current_user.text:
-		info += "\n Text: "+current_user.text
+		info += "\n Text: " + current_user.text
 	completion = client.chat.completions.create(
 		model="gpt-4o-mini",
 		messages=[
@@ -215,9 +215,7 @@ def send_text():
 
 	print(completion)
 
-	messages = []
-	for c in completion.choices:
-		messages.append(c.message.content)
+	messages = [c.message.content for c in completion.choices]
 
 	return jsonify({ 'success':True, 'answers':messages })
 
