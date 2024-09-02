@@ -181,20 +181,45 @@ def send_text():
 	question = request.form.get("question")
 	#TODO: call chatgpt api
 
+	info = ""
+	if current_user.name:
+		info += "\n Name: "+current_user.name
+	if current_user.hobbies:
+		info += "\n Hobbies: "+current_user.hobbies
+	if current_user.school:
+		info += "\n School: "+current_user.school
+	if current_user.text:
+		info += "\n Text: "+current_user.text
 	completion = client.chat.completions.create(
 		model="gpt-4o-mini",
 		messages=[
-			{"role": "system", "content": "write an answer for the message."},
+			{
+				"role": "system",
+				"content": "You are a helpful assistant that can help users formulate answers to the question they’ve been asked. Here is the information about the user."
+			},
 			{
 				"role": "user",
-				"content": "hello."
-			}
-		]
+				"content": info
+			},
+			{
+				"role": "system",
+				"content": "The following is the question that the user was asked."
+			},
+			{
+				"role": "user",
+				"content": question
+			},
+		],
+		n=3
 	)
 
-	print(completion.choices[0].message)
+	print(completion)
 
-	return jsonify({ 'success':True, 'answers':['e','eeeeeee','hhjxcvfnxvk'] })
+	messages = []
+	for c in completion.choices:
+		messages.append(c.message.content)
+
+	return jsonify({ 'success':True, 'answers':messages })
 
 @app.route('/api/save_answer', methods=['POST'])
 @login_required
