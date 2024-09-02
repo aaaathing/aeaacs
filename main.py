@@ -8,6 +8,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin, LoginManager, login_user, login_required, current_user
 #from flask_httpauth import HTTPBasicAuth
 #auth = HTTPBasicAuth()
+from openai import OpenAI
+client = OpenAI()
 db = SQLAlchemy()
 
 """
@@ -178,18 +180,16 @@ def save_user_info():
 def send_text():
 	question = request.form.get("question")
 	#TODO: call chatgpt api
-	from openai import OpenAI
-	client = OpenAI()
 
 	completion = client.chat.completions.create(
-			model="gpt-4o-mini",
-			messages=[
-					{"role": "system", "content": "write an answer for the message."},
-					{
-							"role": "user",
-							"content": "hello."
-					}
-			]
+		model="gpt-4o-mini",
+		messages=[
+			{"role": "system", "content": "write an answer for the message."},
+			{
+				"role": "user",
+				"content": "hello."
+			}
+		]
 	)
 
 	print(completion.choices[0].message)
