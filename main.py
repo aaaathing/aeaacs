@@ -178,6 +178,22 @@ def save_user_info():
 def send_text():
 	question = request.form.get("question")
 	#TODO: call chatgpt api
+	from openai import OpenAI
+	client = OpenAI()
+
+	completion = client.chat.completions.create(
+			model="gpt-4o-mini",
+			messages=[
+					{"role": "system", "content": "write an answer for the message."},
+					{
+							"role": "user",
+							"content": "hello."
+					}
+			]
+	)
+
+	print(completion.choices[0].message)
+
 	return jsonify({ 'success':True, 'answers':['e','eeeeeee','hhjxcvfnxvk'] })
 
 @app.route('/api/save_answer', methods=['POST'])
