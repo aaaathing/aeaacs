@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h2>sign in</h2>
+<form method="POST" action='/login'>
+	<input name="username" placeholder='name'><br>
+	<input name="password" placeholder='password' type='password'><br>
+	<button>login</button>
+</form>
+
+<h2>sign up</h2>
+<form method="POST" action='/signup'>
+	<input name="username" placeholder='name'><br>
+	<input name="password" placeholder='password' type='password'><br>
+	<input name="verify_password" placeholder='verify password' type='password'><br>
+	<button>sign up</button>
+</form>
+
+{% endblock %}

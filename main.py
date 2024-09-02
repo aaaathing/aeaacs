@@ -70,7 +70,7 @@ def load_user_from_request(request):
 
 @app.route('/')
 def login():
-	return render_template('login.html')
+	return render_template('home.html')
 
 
 @app.route('/api/get_user_info')
