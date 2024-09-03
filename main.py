@@ -5,7 +5,7 @@ import uuid
 from flask import Flask, request, render_template, redirect, g, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import UserMixin, LoginManager, login_user, login_required, current_user
+from flask_login import UserMixin, LoginManager, login_user, login_required, current_user, logout_user
 #from flask_httpauth import HTTPBasicAuth
 #auth = HTTPBasicAuth()
 from openai import OpenAI
@@ -70,7 +70,14 @@ def load_user_from_request(request):
 
 @app.route('/')
 def login():
-	return render_template('home.html')
+	if current_user.is_authenticated:
+		return render_template('use-it.html')
+	else:
+		return render_template('home.html')
+
+@app.route('/edit')
+def edit_info():
+	return render_template('edit.html')
 
 
 @app.route('/api/get_user_info')
@@ -129,7 +136,7 @@ def signup_post():
 		return message
 
 	login_user(new_user, remember=True)
-	return redirect("/profile")
+	return redirect("/")
 
 def do_login(request):
 	username = request.form.get("username")
@@ -153,7 +160,13 @@ def login_post():
 
 	# if the above check passes, then we know the user has the right credentials
 	login_user(user, remember=True)
-	return redirect("/profile")
+	return redirect("/")
+
+@app.route("/logout")
+@login_required
+def logout():
+	logout_user()
+	return redirect("/")
 
 @app.route('/api/login', methods=['POST'])
 def api_login_post():
@@ -166,7 +179,7 @@ def api_login_post():
 
 @app.route('/api/save_user_info', methods=['POST'])
 @login_required
-def save_user_info():
+def api_save_user_info():
 	current_user.text = request.form.get("text")
 	current_user.hobbies = request.form.get("hobbies")
 	current_user.birthday = request.form.get("birthday")
@@ -174,6 +187,11 @@ def save_user_info():
 	current_user.name = request.form.get("name")
 	db.session.commit()
 	return jsonify({'success':True})
+
+@app.route('/save_user_info')
+@login_required
+def save_user_info():
+	return api_save_user_info()
 
 @app.route('/api/send_text', methods=['POST'])
 @login_required
