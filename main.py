@@ -193,7 +193,7 @@ def api_save_user_info():
 
 @app.route('/save_user_info', methods=['POST'])
 @login_required
-def save_user_info_get():
+def web_save_user_info():
 	save_user_info(request)
 	return redirect("/")
 
