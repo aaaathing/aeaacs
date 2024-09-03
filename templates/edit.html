@@ -4,14 +4,19 @@
 <h1>Your information</h1>
 <p>It is useful for the answers.</p>
 
-<form action="/save_user_info">
+<form action="/save_user_info" method="POST">
 	Username: {{ current_user.username }}<br>
-	Name: <input name="name" value="{{ current_user.name }}"><br>
-	Hobbies: <input name="hobbies" value="{{ current_user.hobbies }}"><br>
-	School: <input name="school" value="{{ current_user.school }}"><br>
-	Birthday: <input name="birthday" value="{{ current_user.birthday }}"><br>
-	More information: <input name="text" value="{{ current_user.text }}"><br>
-	<button>Save</button>
+	<label for="name" id="name" class="form-label">Name</label>
+	<input name="name" value="{{ current_user.name }}" class="form-control">
+	<label for="hobbies" id="hobbies" class="form-label">Hobbies</label>
+	<input name="hobbies" value="{{ current_user.hobbies }}" class="form-control">
+	<label for="school" class="form-label">School</label>
+	<input name="school" id="school" value="{{ current_user.school }}" class="form-control">
+	<label for="birthday" class="form-label">Birthday</label>
+	<input name="birthday" id="birthday" value="{{ current_user.birthday }}" class="form-control">
+	<label for="text" class="form-label">More information</label>
+	<input name="text" id="text" value="{{ current_user.text }}" class="form-control">
+	<button class="btn btn-primary">Save</button>
 </form>
 
 {% endblock %}

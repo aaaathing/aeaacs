@@ -162,7 +162,7 @@ def login_post():
 	login_user(user, remember=True)
 	return redirect("/")
 
-@app.route("/logout")
+@app.route("/logout", methods=['POST'])
 @login_required
 def logout():
 	logout_user()
@@ -177,21 +177,25 @@ def api_login_post():
 
 	return jsonify({'success':True,'user_id':user.userid})
 
-@app.route('/api/save_user_info', methods=['POST'])
-@login_required
-def api_save_user_info():
+def save_user_info(request):
 	current_user.text = request.form.get("text")
 	current_user.hobbies = request.form.get("hobbies")
 	current_user.birthday = request.form.get("birthday")
 	current_user.school = request.form.get("school")
 	current_user.name = request.form.get("name")
 	db.session.commit()
+
+@app.route('/api/save_user_info', methods=['POST'])
+@login_required
+def api_save_user_info():
+	save_user_info(request)
 	return jsonify({'success':True})
 
-@app.route('/save_user_info')
+@app.route('/save_user_info', methods=['POST'])
 @login_required
-def save_user_info():
-	return api_save_user_info()
+def web_save_user_info():
+	save_user_info(request)
+	return redirect("/")
 
 @app.route('/api/send_text', methods=['POST'])
 @login_required
