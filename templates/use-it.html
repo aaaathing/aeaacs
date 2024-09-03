@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h1>Use it</h1>
+<a href="/edit">Edit info</a><br>
+Username: {{ current_user.username }}
+
+<form action="/logout">
+	<button>Sign out</button>
+</form>
+
+{% endblock %}
