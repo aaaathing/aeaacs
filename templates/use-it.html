@@ -18,7 +18,7 @@
 
 		<h1>Use it</h1>
 
-		<button id="recordButton">start record</button>
+		<button id="recordButton">Start recording</button>
 		<textarea id="question" class="form-control"></textarea>
 		<button class="btn btn-primary" onclick="answer()">Answer</button>
 		<h2>Answers</h2>
@@ -67,10 +67,10 @@
 		let recognition = new (window.webkitSpeechRecognition || SpeechRecognition)()
 		recordButton.onclick = function(){
 			recordButton.onclick = startRecord
-			recordButton.textContent = "start record"
+			recordButton.textContent = "Start recording"
 			recognition.stop()
 		}
-		recordButton.textContent = "stop record"
+		recordButton.textContent = "Stop recording"
 		recognition.onresult = function(e){
 			let result = ""
 			for(let r of e.results) result += r[0].transcript+"\n"
