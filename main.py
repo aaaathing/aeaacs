@@ -250,6 +250,12 @@ def save_answer():
 	db.session.commit()
 	return jsonify({ 'success':True })
 
+@app.route('/previous_answers')
+@login_required
+def get_previous_answers():
+	previous_answers = db.session.execute(db.select(Answer).order_by(Answer.answerid)).scalars()
+	return jsonify([{'question': a.question, 'chosen_answer': a.chosen_answer} for a in previous_answers])
+
 with app.app_context():
 	db.create_all()
 if __name__ == '__main__':
