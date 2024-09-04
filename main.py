@@ -203,6 +203,7 @@ def send_text():
 	question = request.form.get("question")
 	#TODO: call chatgpt api
 
+	"""
 	info = ""
 	if current_user.name:
 		info += "\n Name: " + current_user.name
@@ -237,9 +238,9 @@ def send_text():
 
 	print(completion)
 
-	messages = [c.message.content for c in completion.choices]
+	messages = [c.message.content for c in completion.choices]"""
 
-	return jsonify({ 'success':True, 'answers':messages })
+	return jsonify({ 'success':True, 'answers':['w huihu 43 ee seew','erij43','8dsffefe sew'] })
 
 @app.route('/api/save_answer', methods=['POST'])
 @login_required
@@ -249,6 +250,12 @@ def save_answer():
 	db.session.add(Answer(answerid=str(uuid.uuid4().fields[-1]), userid=current_user.userid, question=question, chosen_answer=chosen_answer ))
 	db.session.commit()
 	return jsonify({ 'success':True })
+
+@app.route('/previous_answers')
+@login_required
+def get_previous_answers():
+	previous_answers = db.session.execute(db.select(Answer).order_by(Answer.answerid)).scalars()
+	return jsonify([{'question': a.question, 'chosen_answer': a.chosen_answer} for a in previous_answers])
 
 with app.app_context():
 	db.create_all()
