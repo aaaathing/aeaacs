@@ -250,7 +250,7 @@ def save_answer():
 	db.session.commit()
 	return jsonify({ 'success':True })
 
-@app.route('/previous_answers')
+@app.route('/api/previous_answers')
 @login_required
 def get_previous_answers():
 	previous_answers = db.session.execute(db.select(Answer).order_by(Answer.answerid)).scalars()
