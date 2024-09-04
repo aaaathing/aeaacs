@@ -43,6 +43,13 @@
 		formData.append("question", document.querySelector("#question").value)
 		formData.append("chosen_answer", button.textContent)
 		await (await fetch("/api/save_answer", {method: "POST", body:formData})).json()
+		document.querySelector("#previous-answers")
+		.insertAdjacentHTML("afterbegin", `
+		<div class="list-group-item">
+			<strong>${removeBad(formData.get("question"))}</strong><br>
+			${removeBad(formData.get("chosen_answer"))}
+		</div>
+		`)
 	}
 	fetch("/previous_answers").then(r => r.json()).then(answers => {
 		document.querySelector("#previous-answers")

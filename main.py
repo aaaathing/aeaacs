@@ -203,7 +203,6 @@ def send_text():
 	question = request.form.get("question")
 	#TODO: call chatgpt api
 
-	"""
 	info = ""
 	if current_user.name:
 		info += "\n Name: " + current_user.name
@@ -238,9 +237,9 @@ def send_text():
 
 	print(completion)
 
-	messages = [c.message.content for c in completion.choices]"""
+	messages = [c.message.content for c in completion.choices]
 
-	return jsonify({ 'success':True, 'answers':['w huihu 43 ee seew','erij43','8dsffefe sew'] })
+	return jsonify({ 'success':True, 'answers':messages })
 
 @app.route('/api/save_answer', methods=['POST'])
 @login_required
