@@ -18,6 +18,7 @@
 
 		<h1>Use it</h1>
 
+		<button id="recordButton">Start recording</button>
 		<textarea id="question" class="form-control"></textarea>
 		<button class="btn btn-primary" onclick="answer()">Answer</button>
 		<h2>Answers</h2>
@@ -51,7 +52,7 @@
 		</div>
 		`)
 	}
-	fetch("/previous_answers").then(r => r.json()).then(answers => {
+	fetch("/api/previous_answers").then(r => r.json()).then(answers => {
 		document.querySelector("#previous-answers")
 		.innerHTML = answers.reduce((a, answer) => a + `
 		<div class="list-group-item">
@@ -60,6 +61,24 @@
 		</div>
 		`, "")
 	})
+
+	let recordButton = document.querySelector("#recordButton")
+	function startRecord(){
+		let recognition = new (window.webkitSpeechRecognition || SpeechRecognition)()
+		recordButton.onclick = function(){
+			recordButton.onclick = startRecord
+			recordButton.textContent = "Start recording"
+			recognition.stop()
+		}
+		recordButton.textContent = "Stop recording"
+		recognition.onresult = function(e){
+			let result = ""
+			for(let r of e.results) result += r[0].transcript+"\n"
+			document.querySelector("#question").value = result
+		}
+		recognition.start()
+	}
+	recordButton.onclick = startRecord
 </script>
 
 {% endblock %}
