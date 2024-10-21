@@ -212,6 +212,8 @@ def send_text():
 		info += "\n School: " + current_user.school
 	if current_user.text:
 		info += "\n Text: " + current_user.text
+	if current_user.birthday:
+		info += "\n Birthday: " + current_user.birthday
 	completion = client.chat.completions.create(
 		model="gpt-4o-mini",
 		messages=[
