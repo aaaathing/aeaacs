@@ -18,8 +18,24 @@
 
 		<h1>Use it</h1>
 
-		<button id="recordButton">Start recording</button>
+		<button id="recordButton" class="btn btn-primary mb-3">Start recording</button>
 		<textarea id="question" class="form-control"></textarea>
+
+		<label class="form-label" for="answer-be">The answer should be</label>
+		<div class="input-group">
+			<input class="form-control" id="answer-be">
+			<button class="btn btn-secondary" id="answer-be-clear">Clear</button>
+		</div>
+		<div class="list-group list-group-horizontal mb-3" id="answer-be-options">
+			<button class="list-group-item list-group-item-action">Short</button>
+			<button class="list-group-item list-group-item-action">Verbose</button>
+			<button class="list-group-item list-group-item-action">Funny</button>
+			<button class="list-group-item list-group-item-action">Casual</button>
+			<button class="list-group-item list-group-item-action">Professional</button>
+			<button class="list-group-item list-group-item-action">Yes</button>
+			<button class="list-group-item list-group-item-action">No</button>
+			<button class="list-group-item list-group-item-action">maybe</button>
+		</div>
 		<button class="btn btn-primary" onclick="answer()">Answer</button>
 		<h2>Answers</h2>
 		<div id="answers" class="list-group"></div>
@@ -28,16 +44,32 @@
 </div>
 
 <script>
+	document.querySelectorAll("#answer-be-options button").forEach(b => {
+		b.onclick = () => {
+			let e = document.querySelector("#answer-be")
+			if(e.value.trim()) e.value += " "
+			e.value += b.textContent
+		}
+	})
+	document.querySelector("#answer-be-clear").onclick = () => {
+		document.querySelector("#answer-be").value = ""
+	}
+
 	async function answer(){
 		let formData = new FormData()
 		formData.append("question", document.querySelector("#question").value)
+		formData.append("answer_be", document.querySelector("#answer-be").value)
 		let answers = await (await fetch("/api/send_text", {method: "POST", body:formData})).json()
 		document.querySelector("#answers")
 		.innerHTML = answers.answers.reduce((a, answer) => a + `
-			<button class="list-group-item list-group-item-action" onclick="sendText(this)">
+			<button class="list-group-item list-group-item-action" onclick="speak(this); sendText(this)">
 				${removeBad(answer)}
 			</button>
 		`, "")
+	}
+	function speak(what){
+		let utterance = new SpeechSynthesisUtterance(what.textContent);
+		speechSynthesis.speak(utterance);
 	}
 	async function sendText(button){
 		let formData = new FormData()
@@ -46,7 +78,7 @@
 		await (await fetch("/api/save_answer", {method: "POST", body:formData})).json()
 		document.querySelector("#previous-answers")
 		.insertAdjacentHTML("afterbegin", `
-		<div class="list-group-item">
+		<div class="list-group-item" onclick="speak(this)">
 			<strong>${removeBad(formData.get("question"))}</strong><br>
 			${removeBad(formData.get("chosen_answer"))}
 		</div>

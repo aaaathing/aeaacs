@@ -201,7 +201,7 @@ def web_save_user_info():
 @login_required
 def send_text():
 	question = request.form.get("question")
-	#TODO: call chatgpt api
+	answer_be = request.form.get("answer_be")
 
 	info = ""
 	if current_user.name:
@@ -217,7 +217,7 @@ def send_text():
 		messages=[
 			{
 				"role": "system",
-				"content": "You are a helpful assistant that can help users formulate answers to the question they’ve been asked. Here is the information about the user."
+				"content": "You are a helpful assistant that can help users formulate answers to the question they’ve been asked. Here is the information about the user:"
 			},
 			{
 				"role": "user",
@@ -225,7 +225,15 @@ def send_text():
 			},
 			{
 				"role": "system",
-				"content": "The following is the question that the user was asked."
+				"content": "The answer should be:"
+			},
+			{
+				"role": "user",
+				"content": answer_be
+			},
+			{
+				"role": "system",
+				"content": "This is the question that the user was asked:"
 			},
 			{
 				"role": "user",
@@ -234,8 +242,6 @@ def send_text():
 		],
 		n=3
 	)
-
-	print(completion)
 
 	messages = [c.message.content for c in completion.choices]
 
@@ -253,7 +259,7 @@ def save_answer():
 @app.route('/api/previous_answers')
 @login_required
 def get_previous_answers():
-	previous_answers = db.session.execute(db.select(Answer).order_by(Answer.answerid)).scalars()
+	previous_answers = db.session.execute(db.select(Answer).filter_by(userid=current_user.userid).order_by(Answer.answerid)).scalars()
 	return jsonify([{'question': a.question, 'chosen_answer': a.chosen_answer} for a in previous_answers])
 
 with app.app_context():
