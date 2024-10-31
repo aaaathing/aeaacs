@@ -2,15 +2,17 @@
 {% block content %}
 
 <div class="row">
-    <div class="col-2">
+    <div class="col-3">
+        <h3>Previous Answers</h3>
         <div id="previous-answers" class="list-group"></div>
-        <!-- Added Delete Chat History Button -->
-        <button class="btn btn-danger mt-3" onclick="deleteChatHistory()">Delete Chat History</button>
+        <!-- Delete All Chat History Button -->
+        <button class="btn btn-danger mt-3" onclick="deleteChatHistory()">Delete All Chat History</button>
     </div>
     <div class="col">
-
-        Username: {{ current_user.username }}
-        <a href="/edit">Edit info</a><br>
+        <p>
+            Username: {{ current_user.username }}
+            <a href="/edit">Edit info</a>
+        </p>
 
         <form action="/logout" method="POST">
             <button class="btn btn-danger">Sign out</button>
@@ -18,95 +20,149 @@
 
         <hr>
 
-        <h1>Use it</h1>
+        <h1>Ask a Question</h1>
 
-        <button id="recordButton">Start recording</button>
-        <textarea id="question" class="form-control"></textarea>
-        <button class="btn btn-primary" onclick="answer()">Answer</button>
-        <h2>Answers</h2>
+        <div class="form-group">
+            <label for="question">Question:</label>
+            <textarea id="question" class="form-control" rows="3"></textarea>
+        </div>
+        <button class="btn btn-primary" onclick="answer()">Get Answers</button>
+        <button id="recordButton" class="btn btn-secondary">Start Recording</button>
+
+        <h2 class="mt-4">Suggested Answers</h2>
         <div id="answers" class="list-group"></div>
-
     </div>
 </div>
 
 <script>
-    async function answer(){
-        let formData = new FormData()
-        formData.append("question", document.querySelector("#question").value)
-        let response = await fetch("/api/send_text", {method: "POST", body:formData})
-        let answers = await response.json()
-        document.querySelector("#answers")
-        .innerHTML = answers.answers.reduce((a, answer) => a + `
-            <button class="list-group-item list-group-item-action" onclick="sendText(this)">
-                ${removeBad(answer)}
-            </button>
-        `, "")
+    async function answer() {
+        let formData = new FormData();
+        let question = document.querySelector("#question").value.trim();
+        if (!question) {
+            alert("Please enter a question.");
+            return;
+        }
+        formData.append("question", question);
+        let response = await fetch("/api/send_text", { method: "POST", body: formData });
+        let answers = await response.json();
+        if (answers.success) {
+            document.querySelector("#answers").innerHTML = answers.answers.reduce((a, answer) => a + `
+                <button class="list-group-item list-group-item-action" onclick="sendText(this)">
+                    ${removeBad(answer)}
+                </button>
+            `, "");
+        } else {
+            alert("Error fetching answers.");
+        }
     }
-    async function sendText(button){
-        let formData = new FormData()
-        formData.append("question", document.querySelector("#question").value)
-        formData.append("chosen_answer", button.textContent)
-        await fetch("/api/save_answer", {method: "POST", body:formData})
+
+    async function sendText(button) {
+        let formData = new FormData();
+        let question = document.querySelector("#question").value;
+        let chosenAnswer = button.textContent;
+        formData.append("question", question);
+        formData.append("chosen_answer", chosenAnswer);
+        let response = await fetch("/api/save_answer", { method: "POST", body: formData });
+        let data = await response.json();
+        if (data.success) {
+            // Prepend the new answer to the previous answers list
+            addPreviousAnswer({
+                answer_id: data.answer_id,
+                question: question,
+                chosen_answer: chosenAnswer
+            });
+            // Clear the suggested answers
+            document.querySelector("#answers").innerHTML = '';
+            // Optionally, clear the question textarea
+            document.querySelector("#question").value = '';
+        } else {
+            alert("Error saving the answer.");
+        }
+    }
+
+    function addPreviousAnswer(answer) {
         document.querySelector("#previous-answers")
-        .insertAdjacentHTML("afterbegin", `
-        <div class="list-group-item">
-            <strong>${removeBad(formData.get("question"))}</strong><br>
-            ${removeBad(formData.get("chosen_answer"))}
-        </div>
-        `)
+            .insertAdjacentHTML("afterbegin", `
+            <div class="list-group-item" data-answer-id="${removeBad(answer.answer_id)}">
+                <button class="close float-right" onclick="deleteAnswer('${removeBad(answer.answer_id)}')">&times;</button>
+                <strong>${removeBad(answer.question)}</strong><br>
+                ${removeBad(answer.chosen_answer)}
+            </div>
+        `);
     }
+
     fetch("/api/previous_answers").then(r => r.json()).then(answers => {
         document.querySelector("#previous-answers")
-        .innerHTML = answers.reduce((a, answer) => a + `
-        <div class="list-group-item">
-            <strong>${removeBad(answer.question)}</strong><br>
-            ${removeBad(answer.chosen_answer)}
-        </div>
-        `, "")
-    })
+            .innerHTML = answers.reduce((a, answer) => a + `
+            <div class="list-group-item" data-answer-id="${removeBad(answer.answer_id)}">
+                <button class="close float-right" onclick="deleteAnswer('${removeBad(answer.answer_id)}')">&times;</button>
+                <strong>${removeBad(answer.question)}</strong><br>
+                ${removeBad(answer.chosen_answer)}
+            </div>
+            `, "");
+    });
 
-    let recordButton = document.querySelector("#recordButton")
-    function startRecord(){
-        let recognition = new (window.webkitSpeechRecognition || SpeechRecognition)()
-        recordButton.onclick = function(){
-            recordButton.onclick = startRecord
-            recordButton.textContent = "Start recording"
-            recognition.stop()
+    async function deleteAnswer(answerId) {
+        if (confirm("Are you sure you want to delete this entry?")) {
+            let formData = new FormData();
+            formData.append("answer_id", answerId);
+            let response = await fetch('/api/delete_answer', {
+                method: 'POST',
+                body: formData
+            });
+            let data = await response.json();
+            if (data.success) {
+                // Remove the answer from the UI
+                let answerElement = document.querySelector(`[data-answer-id='${answerId}']`);
+                if (answerElement) {
+                    answerElement.remove();
+                }
+            } else {
+                alert(data.message);
+            }
         }
-        recordButton.textContent = "Stop recording"
-        recognition.onresult = function(e){
-            let result = ""
-            for(let r of e.results) result += r[0].transcript+"\n"
-            document.querySelector("#question").value = result
-        }
-        recognition.start()
     }
-    recordButton.onclick = startRecord
 
-    // Added Function to Delete Chat History
     async function deleteChatHistory() {
-        if (confirm("Are you sure you want to delete your chat history? This action cannot be undone.")) {
+        if (confirm("Are you sure you want to delete all your chat history? This action cannot be undone.")) {
             let response = await fetch('/api/delete_chat_history', {
                 method: 'POST',
                 credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json'
                 }
-            })
-            let data = await response.json()
+            });
+            let data = await response.json();
             if (data.success) {
-                alert(data.message)
+                alert(data.message);
                 // Clear the previous answers list
-                document.querySelector("#previous-answers").innerHTML = ''
+                document.querySelector("#previous-answers").innerHTML = '';
             } else {
-                alert('Error deleting chat history.')
+                alert('Error deleting chat history.');
             }
         }
     }
 
-    // Existing removeBad function or add it if it's missing
-    function removeBad(str){
-        return str.replace(/[<>]/g, function(c){ return {'<':'&lt;','>':'&gt;'}[c] })
+    let recordButton = document.querySelector("#recordButton");
+    function startRecord() {
+        let recognition = new (window.webkitSpeechRecognition || SpeechRecognition)();
+        recordButton.onclick = function () {
+            recordButton.onclick = startRecord;
+            recordButton.textContent = "Start Recording";
+            recognition.stop();
+        }
+        recordButton.textContent = "Stop Recording";
+        recognition.onresult = function (e) {
+            let result = "";
+            for (let r of e.results) result += r[0].transcript + "\n";
+            document.querySelector("#question").value = result;
+        }
+        recognition.start();
+    }
+    recordButton.onclick = startRecord;
+
+    function removeBad(str) {
+        return str.replace(/[<>]/g, function (c) { return { '<': '&lt;', '>': '&gt;' }[c] });
     }
 </script>
 
