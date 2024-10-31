@@ -1,6 +1,31 @@
 {% extends 'base.html' %}
 {% block content %}
 
+<style>
+    /* Style for the chat history entries */
+    .list-group-item {
+        position: relative;
+    }
+
+    /* Style for the delete button */
+    .delete-button {
+        position: absolute;
+        top: 5px;
+        right: 10px;
+        background: transparent;
+        border: none;
+        font-size: 1.2em;
+        color: #888;
+        cursor: pointer;
+        outline: none;
+    }
+
+    /* Hover effect for the delete button */
+    .delete-button:hover {
+        color: #e74c3c; /* Change color on hover */
+    }
+</style>
+
 <div class="row">
     <div class="col-3">
         <h3>Previous Answers</h3>
@@ -84,7 +109,7 @@
         document.querySelector("#previous-answers")
             .insertAdjacentHTML("afterbegin", `
             <div class="list-group-item" data-answer-id="${removeBad(answer.answer_id)}">
-                <button class="close float-right" onclick="deleteAnswer('${removeBad(answer.answer_id)}')">&times;</button>
+                <button class="delete-button" onclick="deleteAnswer('${removeBad(answer.answer_id)}')">&times;</button>
                 <strong>${removeBad(answer.question)}</strong><br>
                 ${removeBad(answer.chosen_answer)}
             </div>
@@ -95,7 +120,7 @@
         document.querySelector("#previous-answers")
             .innerHTML = answers.reduce((a, answer) => a + `
             <div class="list-group-item" data-answer-id="${removeBad(answer.answer_id)}">
-                <button class="close float-right" onclick="deleteAnswer('${removeBad(answer.answer_id)}')">&times;</button>
+                <button class="delete-button" onclick="deleteAnswer('${removeBad(answer.answer_id)}')">&times;</button>
                 <strong>${removeBad(answer.question)}</strong><br>
                 ${removeBad(answer.chosen_answer)}
             </div>
