@@ -1,22 +1,59 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<h1>Your information</h1>
+<h1>Your Information</h1>
 <p>It is useful for the answers.</p>
 
 <form action="/save_user_info" method="POST">
-	Username: {{ current_user.username }}<br>
-	<label for="name" id="name" class="form-label">Name</label>
-	<input name="name" value="{{ current_user.name }}" class="form-control">
-	<label for="hobbies" id="hobbies" class="form-label">Hobbies</label>
-	<input name="hobbies" value="{{ current_user.hobbies }}" class="form-control">
-	<label for="school" class="form-label">School</label>
-	<input name="school" id="school" value="{{ current_user.school }}" class="form-control">
-	<label for="birthday" class="form-label">Birthday</label>
-	<input name="birthday" id="birthday" value="{{ current_user.birthday }}" class="form-control">
-	<label for="text" class="form-label">More information</label>
-	<input name="text" id="text" value="{{ current_user.text }}" class="form-control">
-	<button class="btn btn-primary">Save</button>
+    <p>Username: {{ current_user.username }}</p>
+    
+    <label for="name" class="form-label">Name</label>
+    <input name="name" value="{{ current_user.name }}" class="form-control">
+
+    <label for="hobbies" class="form-label">Hobbies</label>
+    <input name="hobbies" value="{{ current_user.hobbies }}" class="form-control">
+
+    <label for="school" class="form-label">School</label>
+    <input name="school" value="{{ current_user.school }}" class="form-control">
+
+    <label for="birthday" class="form-label">Birthday</label>
+    <input name="birthday" value="{{ current_user.birthday }}" class="form-control">
+
+    <label for="text" class="form-label">More Information</label>
+    <input name="text" value="{{ current_user.text }}" class="form-control">
+
+    <hr>
+
+    <!-- Verbosity Options -->
+    <label class="form-label">Answer Length:</label><br>
+    <div class="form-check form-check-inline">
+        <input class="form-check-input" type="radio" name="verbosity" id="concise" value="concise" {% if current_user.verbosity == 'concise' %}checked{% endif %}>
+        <label class="form-check-label" for="concise">Concise</label>
+    </div>
+    <div class="form-check form-check-inline">
+        <input class="form-check-input" type="radio" name="verbosity" id="verbose" value="verbose" {% if current_user.verbosity == 'verbose' %}checked{% endif %}>
+        <label class="form-check-label" for="verbose">Verbose</label>
+    </div>
+
+    <hr>
+
+    <!-- Tone Options -->
+    <label class="form-label">Answer Tone:</label><br>
+    <div class="form-check form-check-inline">
+        <input class="form-check-input" type="radio" name="tone" id="funny" value="funny" {% if current_user.tone == 'funny' %}checked{% endif %}>
+        <label class="form-check-label" for="funny">Funny</label>
+    </div>
+    <div class="form-check form-check-inline">
+        <input class="form-check-input" type="radio" name="tone" id="casual" value="casual" {% if current_user.tone == 'casual' %}checked{% endif %}>
+        <label class="form-check-label" for="casual">Casual</label>
+    </div>
+    <div class="form-check form-check-inline">
+        <input class="form-check-input" type="radio" name="tone" id="professional" value="professional" {% if current_user.tone == 'professional' %}checked{% endif %}>
+        <label class="form-check-label" for="professional">Professional</label>
+    </div>
+
+    <br><br>
+    <button class="btn btn-primary">Save</button>
 </form>
 
 {% endblock %}
