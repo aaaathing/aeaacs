@@ -2,83 +2,112 @@
 {% block content %}
 
 <div class="row">
-	<div class="col-2">
-		<div id="previous-answers" class="list-group"></div>
-	</div>
-	<div class="col">
+    <div class="col-2">
+        <div id="previous-answers" class="list-group"></div>
+        <!-- Added Delete Chat History Button -->
+        <button class="btn btn-danger mt-3" onclick="deleteChatHistory()">Delete Chat History</button>
+    </div>
+    <div class="col">
 
-		Username: {{ current_user.username }}
-		<a href="/edit">Edit info</a><br>
+        Username: {{ current_user.username }}
+        <a href="/edit">Edit info</a><br>
 
-		<form action="/logout" method="POST">
-			<button class="btn btn-danger">Sign out</button>
-		</form>
+        <form action="/logout" method="POST">
+            <button class="btn btn-danger">Sign out</button>
+        </form>
 
-		<hr>
+        <hr>
 
-		<h1>Use it</h1>
+        <h1>Use it</h1>
 
-		<button id="recordButton">Start recording</button>
-		<textarea id="question" class="form-control"></textarea>
-		<button class="btn btn-primary" onclick="answer()">Answer</button>
-		<h2>Answers</h2>
-		<div id="answers" class="list-group"></div>
+        <button id="recordButton">Start recording</button>
+        <textarea id="question" class="form-control"></textarea>
+        <button class="btn btn-primary" onclick="answer()">Answer</button>
+        <h2>Answers</h2>
+        <div id="answers" class="list-group"></div>
 
-	</div>
+    </div>
 </div>
 
 <script>
-	async function answer(){
-		let formData = new FormData()
-		formData.append("question", document.querySelector("#question").value)
-		let answers = await (await fetch("/api/send_text", {method: "POST", body:formData})).json()
-		document.querySelector("#answers")
-		.innerHTML = answers.answers.reduce((a, answer) => a + `
-			<button class="list-group-item list-group-item-action" onclick="sendText(this)">
-				${removeBad(answer)}
-			</button>
-		`, "")
-	}
-	async function sendText(button){
-		let formData = new FormData()
-		formData.append("question", document.querySelector("#question").value)
-		formData.append("chosen_answer", button.textContent)
-		await (await fetch("/api/save_answer", {method: "POST", body:formData})).json()
-		document.querySelector("#previous-answers")
-		.insertAdjacentHTML("afterbegin", `
-		<div class="list-group-item">
-			<strong>${removeBad(formData.get("question"))}</strong><br>
-			${removeBad(formData.get("chosen_answer"))}
-		</div>
-		`)
-	}
-	fetch("/api/previous_answers").then(r => r.json()).then(answers => {
-		document.querySelector("#previous-answers")
-		.innerHTML = answers.reduce((a, answer) => a + `
-		<div class="list-group-item">
-			<strong>${removeBad(answer.question)}</strong><br>
-			${removeBad(answer.chosen_answer)}
-		</div>
-		`, "")
-	})
+    async function answer(){
+        let formData = new FormData()
+        formData.append("question", document.querySelector("#question").value)
+        let response = await fetch("/api/send_text", {method: "POST", body:formData})
+        let answers = await response.json()
+        document.querySelector("#answers")
+        .innerHTML = answers.answers.reduce((a, answer) => a + `
+            <button class="list-group-item list-group-item-action" onclick="sendText(this)">
+                ${removeBad(answer)}
+            </button>
+        `, "")
+    }
+    async function sendText(button){
+        let formData = new FormData()
+        formData.append("question", document.querySelector("#question").value)
+        formData.append("chosen_answer", button.textContent)
+        await fetch("/api/save_answer", {method: "POST", body:formData})
+        document.querySelector("#previous-answers")
+        .insertAdjacentHTML("afterbegin", `
+        <div class="list-group-item">
+            <strong>${removeBad(formData.get("question"))}</strong><br>
+            ${removeBad(formData.get("chosen_answer"))}
+        </div>
+        `)
+    }
+    fetch("/api/previous_answers").then(r => r.json()).then(answers => {
+        document.querySelector("#previous-answers")
+        .innerHTML = answers.reduce((a, answer) => a + `
+        <div class="list-group-item">
+            <strong>${removeBad(answer.question)}</strong><br>
+            ${removeBad(answer.chosen_answer)}
+        </div>
+        `, "")
+    })
 
-	let recordButton = document.querySelector("#recordButton")
-	function startRecord(){
-		let recognition = new (window.webkitSpeechRecognition || SpeechRecognition)()
-		recordButton.onclick = function(){
-			recordButton.onclick = startRecord
-			recordButton.textContent = "Start recording"
-			recognition.stop()
-		}
-		recordButton.textContent = "Stop recording"
-		recognition.onresult = function(e){
-			let result = ""
-			for(let r of e.results) result += r[0].transcript+"\n"
-			document.querySelector("#question").value = result
-		}
-		recognition.start()
-	}
-	recordButton.onclick = startRecord
+    let recordButton = document.querySelector("#recordButton")
+    function startRecord(){
+        let recognition = new (window.webkitSpeechRecognition || SpeechRecognition)()
+        recordButton.onclick = function(){
+            recordButton.onclick = startRecord
+            recordButton.textContent = "Start recording"
+            recognition.stop()
+        }
+        recordButton.textContent = "Stop recording"
+        recognition.onresult = function(e){
+            let result = ""
+            for(let r of e.results) result += r[0].transcript+"\n"
+            document.querySelector("#question").value = result
+        }
+        recognition.start()
+    }
+    recordButton.onclick = startRecord
+
+    // Added Function to Delete Chat History
+    async function deleteChatHistory() {
+        if (confirm("Are you sure you want to delete your chat history? This action cannot be undone.")) {
+            let response = await fetch('/api/delete_chat_history', {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            let data = await response.json()
+            if (data.success) {
+                alert(data.message)
+                // Clear the previous answers list
+                document.querySelector("#previous-answers").innerHTML = ''
+            } else {
+                alert('Error deleting chat history.')
+            }
+        }
+    }
+
+    // Existing removeBad function or add it if it's missing
+    function removeBad(str){
+        return str.replace(/[<>]/g, function(c){ return {'<':'&lt;','>':'&gt;'}[c] })
+    }
 </script>
 
 {% endblock %}
