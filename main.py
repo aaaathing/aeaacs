@@ -197,35 +197,33 @@ def send_text():
         info += "\nBirthday: " + current_user.birthday
 
     messages = [
-				{
-						"role": "system",
-						"content": "You are a person talking to your peer, here are some information about you:"
-				},
-				{
-						"role": "user",
-						"content": info
-				},
-				{
-						"role": "system",
-						"content": "The answer should be "+(request.form.get("tone") or "")+" and "+(request.form.get("verbosity") or "")+". The following is the question."
-				},
-				{
-						"role": "user",
-						"content": question
-				},
-		]
+        {
+            "role": "system",
+            "content": "You are a person talking to your peers, here are some information about you:"
+        },
+        {
+            "role": "user",
+            "content": info
+        },
+        {
+            "role": "system",
+            "content": "The answer should be " + (request.form.get("tone") or "") + " and " + (request.form.get("verbosity") or "") + ". The following is the question."
+        },
+        {
+            "role": "user",
+            "content": question
+        },
+    ]
     if request.form.get("whatYouWantToSay"):
         messages.append({
-						"role": "system",
-						"content": "The user wants to say "+(request.form.get("whatYouWantToSay") or "")
-				})
+			"role": "system",
+			"content": "The user wants to say " + (request.form.get("whatYouWantToSay") or "")
+		})
     completion = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=messages,
         n=3
     )
-
-    print(completion)
 
     messages = [c.message.content for c in completion.choices]
 
