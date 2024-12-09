@@ -228,8 +228,6 @@ def send_text():
     print(completion)
 
     messages = [c.message.content for c in completion.choices]
-    # Add "Yes" and "No" options to the answers
-    messages.extend(["Yes", "No"])
 
     return jsonify({'success': True, 'answers': messages})
 
