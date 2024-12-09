@@ -22,36 +22,6 @@
     <label for="text" class="form-label">More Information</label>
     <input name="text" value="{{ current_user.text }}" class="form-control">
 
-    <hr>
-
-    <!-- Verbosity Options -->
-    <label class="form-label">Answer Length:</label><br>
-    <div class="form-check form-check-inline">
-        <input class="form-check-input" type="radio" name="verbosity" id="concise" value="concise" {% if current_user.verbosity == 'concise' %}checked{% endif %}>
-        <label class="form-check-label" for="concise">Concise</label>
-    </div>
-    <div class="form-check form-check-inline">
-        <input class="form-check-input" type="radio" name="verbosity" id="verbose" value="verbose" {% if current_user.verbosity == 'verbose' %}checked{% endif %}>
-        <label class="form-check-label" for="verbose">Verbose</label>
-    </div>
-
-    <hr>
-
-    <!-- Tone Options -->
-    <label class="form-label">Answer Tone:</label><br>
-    <div class="form-check form-check-inline">
-        <input class="form-check-input" type="radio" name="tone" id="funny" value="funny" {% if current_user.tone == 'funny' %}checked{% endif %}>
-        <label class="form-check-label" for="funny">Funny</label>
-    </div>
-    <div class="form-check form-check-inline">
-        <input class="form-check-input" type="radio" name="tone" id="casual" value="casual" {% if current_user.tone == 'casual' %}checked{% endif %}>
-        <label class="form-check-label" for="casual">Casual</label>
-    </div>
-    <div class="form-check form-check-inline">
-        <input class="form-check-input" type="radio" name="tone" id="professional" value="professional" {% if current_user.tone == 'professional' %}checked{% endif %}>
-        <label class="form-check-label" for="professional">Professional</label>
-    </div>
-
     <br><br>
     <button class="btn btn-primary">Save</button>
 </form>

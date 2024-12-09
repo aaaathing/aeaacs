@@ -209,7 +209,7 @@ def send_text():
             },
             {
                 "role": "system",
-                "content": "The following is the question that the user was asked."
+                "content": "The answer should be "+(request.form.get("tone") or "")+" and "+(request.form.get("verbosity") or "")+". The following is the question."
             },
             {
                 "role": "user",
