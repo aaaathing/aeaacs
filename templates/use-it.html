@@ -22,7 +22,12 @@
 
     /* Hover effect for the delete button */
     .delete-button:hover {
-        color: #e74c3c; /* Change color on hover */
+        color: #e74c3c;
+        /* Change color on hover */
+    }
+
+    #question {
+        height: 345px;
     }
 </style>
 
@@ -47,12 +52,54 @@
 
         <h1>Ask a Question</h1>
 
-        <div class="form-group">
-            <label for="question">Question:</label>
-            <textarea id="question" class="form-control" rows="3"></textarea>
+        <div class="row">
+            <div class="col">
+                <div class="form-group">
+                    <label for="question">Question:</label>
+                    <textarea id="question" class="form-control" rows="3"></textarea>
+                </div>
+            </div>
+            <div class="col" style="display: flex; align-items: center;">
+                <div>
+                    <button id="recordButton" class="btn btn-secondary mb-3">Record Question</button>
+                    <span id="recording"></span><br>
+
+                    <form id="answer-options">
+                        <!-- Verbosity Options -->
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="verbosity" id="concise" value="concise"
+                                checked>
+                            <label class="form-check-label" for="concise">Concise</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="verbosity" id="verbose" value="verbose">
+                            <label class="form-check-label" for="verbose">Verbose</label>
+                        </div>
+                        <br>
+
+                        <!-- Tone Options -->
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="tone" id="casual" value="casual" checked>
+                            <label class="form-check-label" for="casual">Casual</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="tone" id="funny" value="funny">
+                            <label class="form-check-label" for="funny">Funny</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="tone" id="professional"
+                                value="professional">
+                            <label class="form-check-label" for="professional">Professional</label>
+                        </div>
+                    </form>
+
+                    <button class="btn btn-primary mb-3 mt-3" onclick="answer()">Generate Answers</button><br>
+                    <button class="btn btn-success mb-3" onclick="answer('yes')">Generate Answers for Yes</button><br>
+                    <button class="btn btn-danger mb-3" onclick="answer('no')">Generate Answers for No</button><br>
+                    <button class="btn btn-warning mb-3" onclick="answer('maybe')">Generate Answers for Maybe</button><br>
+                </div>
+            </div>
         </div>
-        <button class="btn btn-primary" onclick="answer()">Get Answers</button>
-        <button id="recordButton" class="btn btn-secondary">Start Recording</button>
 
         <h2 class="mt-4">Suggested Answers</h2>
         <div id="answers" class="list-group"></div>
@@ -60,25 +107,33 @@
 </div>
 
 <script>
-    async function answer() {
+    async function answer(whatYouWantToSay) {
         let formData = new FormData();
         let question = document.querySelector("#question").value.trim();
         if (!question) {
             alert("Please enter a question.");
             return;
         }
+        let form = document.querySelector("#answer-options")
         formData.append("question", question);
+        formData.append("verbosity", form.elements.verbosity.value);
+        formData.append("tone", form.elements.tone.value);
+        formData.append("whatYouWantToSay", whatYouWantToSay);
         let response = await fetch("/api/send_text", { method: "POST", body: formData });
         let answers = await response.json();
         if (answers.success) {
             document.querySelector("#answers").innerHTML = answers.answers.reduce((a, answer) => a + `
-                <button class="list-group-item list-group-item-action" onclick="sendText(this)">
+                <button class="list-group-item list-group-item-action" onclick="speak(this); sendText(this)">
                     ${removeBad(answer)}
                 </button>
             `, "");
         } else {
             alert("Error fetching answers.");
         }
+    }
+    function speak(what) {
+        let utterance = new SpeechSynthesisUtterance(what.textContent);
+        speechSynthesis.speak(utterance);
     }
 
     async function sendText(button) {
@@ -108,7 +163,7 @@
     function addPreviousAnswer(answer) {
         document.querySelector("#previous-answers")
             .insertAdjacentHTML("afterbegin", `
-            <div class="list-group-item" data-answer-id="${removeBad(answer.answer_id)}">
+            <div class="list-group-item" data-answer-id="${removeBad(answer.answer_id)}" onclick="speak(this)">
                 <button class="delete-button" onclick="deleteAnswer('${removeBad(answer.answer_id)}')">&times;</button>
                 <strong>${removeBad(answer.question)}</strong><br>
                 ${removeBad(answer.chosen_answer)}
@@ -119,7 +174,7 @@
     fetch("/api/previous_answers").then(r => r.json()).then(answers => {
         document.querySelector("#previous-answers")
             .innerHTML = answers.reduce((a, answer) => a + `
-            <div class="list-group-item" data-answer-id="${removeBad(answer.answer_id)}">
+            <div class="list-group-item" data-answer-id="${removeBad(answer.answer_id)}" onclick="speak(this)">
                 <button class="delete-button" onclick="deleteAnswer('${removeBad(answer.answer_id)}')">&times;</button>
                 <strong>${removeBad(answer.question)}</strong><br>
                 ${removeBad(answer.chosen_answer)}
@@ -169,14 +224,17 @@
     }
 
     let recordButton = document.querySelector("#recordButton");
+    let recording = document.querySelector("#recording");
     function startRecord() {
         let recognition = new (window.webkitSpeechRecognition || SpeechRecognition)();
         recordButton.onclick = function () {
             recordButton.onclick = startRecord;
-            recordButton.textContent = "Start Recording";
+            recordButton.textContent = "Record question";
+            recording.textContent = ""
             recognition.stop();
         }
         recordButton.textContent = "Stop Recording";
+        recording.textContent = "Recording..."
         recognition.onresult = function (e) {
             let result = "";
             for (let r of e.results) result += r[0].transcript + "\n";
