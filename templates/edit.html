@@ -8,19 +8,19 @@
     <p>Username: {{ current_user.username }}</p>
     
     <label for="name" class="form-label">Name</label>
-    <input name="name" value="{{ current_user.name }}" class="form-control">
+    <input name="name" value="{{ current_user.name or '' }}" class="form-control">
 
     <label for="hobbies" class="form-label">Hobbies</label>
-    <input name="hobbies" value="{{ current_user.hobbies }}" class="form-control">
+    <input name="hobbies" value="{{ current_user.hobbies or '' }}" class="form-control">
 
     <label for="school" class="form-label">School</label>
-    <input name="school" value="{{ current_user.school }}" class="form-control">
+    <input name="school" value="{{ current_user.school or '' }}" class="form-control">
 
     <label for="birthday" class="form-label">Birthday</label>
-    <input name="birthday" value="{{ current_user.birthday }}" class="form-control">
+    <input name="birthday" value="{{ current_user.birthday or '' }}" class="form-control">
 
     <label for="text" class="form-label">More Information</label>
-    <input name="text" value="{{ current_user.text }}" class="form-control">
+    <input name="text" value="{{ current_user.text or '' }}" class="form-control">
 
     <br><br>
     <button class="btn btn-primary">Save</button>

@@ -118,7 +118,7 @@ def signup_post():
         return message
 
     login_user(new_user, remember=True)
-    return redirect("/")
+    return redirect("/edit")
 
 def do_login(request):
     username = request.form.get("username")
