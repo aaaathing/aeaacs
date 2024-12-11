@@ -1,3 +1,4 @@
+from os import environ
 import uuid
 from flask import Flask, request, render_template, redirect, jsonify
 from flask_sqlalchemy import SQLAlchemy
@@ -10,14 +11,14 @@ db = SQLAlchemy()
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret-key-goes-here'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
+app.config['SQLALCHEMY_DATABASE_URI'] = environ["DATABASE_URL"] or 'sqlite:///db.sqlite'
 
 db.init_app(app)
 
 class User(UserMixin, db.Model):
     userid = db.Column(db.String(100), primary_key=True)  # primary keys are required by SQLAlchemy
     username = db.Column(db.String(1000), unique=True)
-    password = db.Column(db.String(100))
+    password = db.Column(db.String(1000))
     name = db.Column(db.String(1000), nullable=True)
     text = db.Column(db.String(100000), nullable=True)
     hobbies = db.Column(db.String(1000), nullable=True)
