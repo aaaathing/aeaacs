@@ -11,7 +11,7 @@ db = SQLAlchemy()
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret-key-goes-here'
-app.config['SQLALCHEMY_DATABASE_URI'] = environ["DATABASE_URL"] or 'sqlite:///db.sqlite'
+app.config['SQLALCHEMY_DATABASE_URI'] = environ.get("DATABASE_URL") or 'sqlite:///db.sqlite'
 
 db.init_app(app)
 
@@ -241,7 +241,7 @@ def generate_introduction():
     messages = [
         {
             "role": "system",
-            "content": "Generate an introduction about yourself, here are some information about you:"
+            "content": "Generate an introduction about yourself. Be concise and include the fact that you are using this app to help you communicate. Here are some information about you:"
         },
         {
             "role": "user",
