@@ -179,11 +179,7 @@ def web_save_user_info():
     save_user_info(request)
     return redirect("/")
 
-@app.route('/api/send_text', methods=['POST'])
-@login_required
-def send_text():
-    question = request.form.get("question")
-
+def get_info():
     info = ""
     if current_user.name:
         info += "\nName: " + current_user.name
@@ -195,6 +191,12 @@ def send_text():
         info += "\nText: " + current_user.text
     if current_user.birthday:
         info += "\nBirthday: " + current_user.birthday
+    return info
+
+@app.route('/api/send_text', methods=['POST'])
+@login_required
+def send_text():
+    question = request.form.get("question")
 
     messages = [
         {
@@ -203,7 +205,7 @@ def send_text():
         },
         {
             "role": "user",
-            "content": info
+            "content": get_info()
         },
         {
             "role": "system",
@@ -223,6 +225,28 @@ def send_text():
         model="gpt-4o-mini",
         messages=messages,
         n=3
+    )
+
+    messages = [c.message.content for c in completion.choices]
+
+    return jsonify({'success': True, 'answers': messages})
+
+@app.route('/api/generate_introduction', methods=['POST'])
+@login_required
+def generate_introduction():
+    messages = [
+        {
+            "role": "system",
+            "content": "Generate an introduction about you, here are some information about you:"
+        },
+        {
+            "role": "user",
+            "content": get_info()
+        }
+    ]
+    completion = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=messages
     )
 
     messages = [c.message.content for c in completion.choices]

@@ -22,8 +22,21 @@
     <label for="text" class="form-label">More Information</label>
     <input name="text" value="{{ current_user.text or '' }}" class="form-control">
 
+    <label for="introduction" class="form-label">Introduction</label>
+    <textarea id="introduction" name="introduction" class="form-control">{{ current_user.introduction or '' }}</textarea>
+    <button onclick="generateIntroduction(); return false" class="btn btn-primary">Generate introduction</button>
+
     <br><br>
-    <button class="btn btn-primary">Save</button>
+    <button class="btn btn-primary" onclick="save()">Save</button>
 </form>
+
+<script>
+async function generateIntroduction(){
+    let form = document.querySelector("form")
+    await fetch("/save_user_info", {method: "POST", body: new FormData(form)})
+    let result = await (await fetch("/api/generate_introduction", {method: "POST"})).json()
+    document.querySelector("#introduction").value = result.answers[0]
+}
+</script>
 
 {% endblock %}
