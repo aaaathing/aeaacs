@@ -23,6 +23,7 @@ class User(UserMixin, db.Model):
     hobbies = db.Column(db.String(1000), nullable=True)
     birthday = db.Column(db.String(100), nullable=True)
     school = db.Column(db.String(100), nullable=True)
+    introduction = db.Column(db.String(100000), nullable=True)
 
     def get_id(self):
         return self.userid
@@ -73,7 +74,8 @@ def get_resource():
         'text': current_user.text,
         'hobbies': current_user.hobbies,
         'birthday': current_user.birthday,
-        'school': current_user.school
+        'school': current_user.school,
+        'introduction': current_user.introduction
     })
 
 def signup(request):
@@ -165,6 +167,7 @@ def save_user_info(request):
     current_user.birthday = request.form.get("birthday")
     current_user.school = request.form.get("school")
     current_user.name = request.form.get("name")
+    current_user.introduction = request.form.get("introduction")
     db.session.commit()
 
 @app.route('/api/save_user_info', methods=['POST'])
@@ -237,7 +240,7 @@ def generate_introduction():
     messages = [
         {
             "role": "system",
-            "content": "Generate an introduction about you, here are some information about you:"
+            "content": "Generate an introduction about yourself, here are some information about you:"
         },
         {
             "role": "user",

@@ -97,6 +97,7 @@
                     <button class="btn btn-success mb-3" onclick="answer('yes')">Generate Answers for Yes</button><br>
                     <button class="btn btn-danger mb-3" onclick="answer('no')">Generate Answers for No</button><br>
                     <button class="btn btn-warning mb-3" onclick="answer('maybe')">Generate Answers for Maybe</button><br>
+                    <button class="btn btn-primary mb-3" onclick="introduce()">Say introduction</button><br>
                 </div>
             </div>
         </div>
@@ -123,7 +124,7 @@
         let answers = await response.json();
         if (answers.success) {
             document.querySelector("#answers").innerHTML = answers.answers.reduce((a, answer) => a + `
-                <button class="list-group-item list-group-item-action" onclick="speak(this); sendText(this)">
+                <button class="list-group-item list-group-item-action" onclick="speak(this.textContent); sendText(this)">
                     ${removeBad(answer)}
                 </button>
             `, "");
@@ -132,7 +133,7 @@
         }
     }
     function speak(what) {
-        let utterance = new SpeechSynthesisUtterance(what.textContent);
+        let utterance = new SpeechSynthesisUtterance(what);
         speechSynthesis.speak(utterance);
     }
 
@@ -163,7 +164,7 @@
     function addPreviousAnswer(answer) {
         document.querySelector("#previous-answers")
             .insertAdjacentHTML("afterbegin", `
-            <div class="list-group-item" data-answer-id="${removeBad(answer.answer_id)}" onclick="speak(this)">
+            <div class="list-group-item" data-answer-id="${removeBad(answer.answer_id)}" onclick="speak(this.textContent)">
                 <button class="delete-button" onclick="deleteAnswer('${removeBad(answer.answer_id)}')">&times;</button>
                 <strong>${removeBad(answer.question)}</strong><br>
                 ${removeBad(answer.chosen_answer)}
@@ -174,7 +175,7 @@
     fetch("/api/previous_answers").then(r => r.json()).then(answers => {
         document.querySelector("#previous-answers")
             .innerHTML = answers.reduce((a, answer) => a + `
-            <div class="list-group-item" data-answer-id="${removeBad(answer.answer_id)}" onclick="speak(this)">
+            <div class="list-group-item" data-answer-id="${removeBad(answer.answer_id)}" onclick="speak(this.textContent)">
                 <button class="delete-button" onclick="deleteAnswer('${removeBad(answer.answer_id)}')">&times;</button>
                 <strong>${removeBad(answer.question)}</strong><br>
                 ${removeBad(answer.chosen_answer)}
@@ -243,6 +244,11 @@
         recognition.start();
     }
     recordButton.onclick = startRecord;
+
+    async function introduce(){
+        let info = await (await fetch("/api/get_user_info")).json()
+        speak(info.introduction)
+    }
 
     function removeBad(str) {
         return str.replace(/[<>]/g, function (c) { return { '<': '&lt;', '>': '&gt;' }[c] });
