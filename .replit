@@ -5,12 +5,8 @@ run = "python main.py"
 channel = "stable-24_05"
 
 [deployment]
-run = ["sh", "-c", "gunicorn main:app -b 0.0.0.0:8000"]
+run = ["sh", "-c", "gunicorn main:app -b 0.0.0.0:8080"]
 deploymentTarget = "cloudrun"
-
-[[ports]]
-localPort = 8000
-externalPort = 8000
 
 [[ports]]
 localPort = 8080
