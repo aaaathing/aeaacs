@@ -1,3 +1,4 @@
+from os import environ
 import uuid
 from flask import Flask, request, render_template, redirect, jsonify
 from flask_sqlalchemy import SQLAlchemy
@@ -10,19 +11,20 @@ db = SQLAlchemy()
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret-key-goes-here'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
+app.config['SQLALCHEMY_DATABASE_URI'] = environ["DATABASE_URL"] or 'sqlite:///db.sqlite'
 
 db.init_app(app)
 
 class User(UserMixin, db.Model):
     userid = db.Column(db.String(100), primary_key=True)  # primary keys are required by SQLAlchemy
     username = db.Column(db.String(1000), unique=True)
-    password = db.Column(db.String(100))
+    password = db.Column(db.String(1000))
     name = db.Column(db.String(1000), nullable=True)
     text = db.Column(db.String(100000), nullable=True)
     hobbies = db.Column(db.String(1000), nullable=True)
     birthday = db.Column(db.String(100), nullable=True)
     school = db.Column(db.String(100), nullable=True)
+    introduction = db.Column(db.String(100000), nullable=True)
 
     def get_id(self):
         return self.userid
@@ -73,7 +75,8 @@ def get_resource():
         'text': current_user.text,
         'hobbies': current_user.hobbies,
         'birthday': current_user.birthday,
-        'school': current_user.school
+        'school': current_user.school,
+        'introduction': current_user.introduction
     })
 
 def signup(request):
@@ -165,6 +168,7 @@ def save_user_info(request):
     current_user.birthday = request.form.get("birthday")
     current_user.school = request.form.get("school")
     current_user.name = request.form.get("name")
+    current_user.introduction = request.form.get("introduction")
     db.session.commit()
 
 @app.route('/api/save_user_info', methods=['POST'])
@@ -237,7 +241,7 @@ def generate_introduction():
     messages = [
         {
             "role": "system",
-            "content": "Generate an introduction about you, here are some information about you:"
+            "content": "Generate an introduction about yourself, here are some information about you:"
         },
         {
             "role": "user",
