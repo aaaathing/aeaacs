@@ -4,3 +4,5 @@ google-cloud-storage
 flask-sqlalchemy
 flask-login
 uuid
+openai
+werkzeug
