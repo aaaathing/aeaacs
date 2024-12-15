@@ -1,4 +1,18 @@
 {% extends 'base.html' %}
+
+{% block nav %}
+<div style="margin-left: auto;">
+    <p>
+        Username: {{ current_user.username }}
+        <a href="/edit">Edit info</a>
+    </p>
+
+    <form action="/logout" method="POST">
+        <button class="btn btn-danger">Sign out</button>
+    </form>
+</div>
+{% endblock %}
+
 {% block content %}
 
 <style>
@@ -25,89 +39,69 @@
         color: #e74c3c;
         /* Change color on hover */
     }
-
-    #question {
-        height: 345px;
-    }
 </style>
 
-<div class="row">
-    <div class="col-3">
-        <h3>Previous Answers</h3>
-        <div id="previous-answers" class="list-group"></div>
-        <!-- Delete Chat History Button -->
-        <button class="btn btn-danger mt-3" onclick="deleteChatHistory()">Delete Chat History</button>
-    </div>
-    <div class="col">
-        <p>
-            Username: {{ current_user.username }}
-            <a href="/edit">Edit info</a>
-        </p>
+<div style="max-width: 800px;" class="mx-auto">
 
-        <form action="/logout" method="POST">
-            <button class="btn btn-danger">Sign out</button>
-        </form>
+    <button class="btn btn-primary mb-3" onclick="introduce()">Introduce Yourself</button><br>
 
-        <hr>
+    <button id="recordButton" class="btn btn-secondary mb-3">Listen</button>
+    <span id="recording"></span><br>
+    <textarea id="question" class="form-control" rows="3"></textarea>
+    
 
-        <button class="btn btn-primary" onclick="introduce()">Introduce Yourself</button><br>
-
-        <hr>
-
-        <h1>Ask a Question</h1>
-
-        <div class="row">
-            <div class="col">
-                <div class="form-group">
-                    <label for="question">Question:</label>
-                    <textarea id="question" class="form-control" rows="3"></textarea>
-                </div>
-            </div>
-            <div class="col" style="display: flex; align-items: center;">
-                <div>
-                    <button id="recordButton" class="btn btn-secondary mb-3">Record Question</button>
-                    <span id="recording"></span><br>
-
-                    <form id="answer-options">
-                        <!-- Verbosity Options -->
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="verbosity" id="concise" value="concise"
-                                checked>
-                            <label class="form-check-label" for="concise">Concise</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="verbosity" id="verbose" value="verbose">
-                            <label class="form-check-label" for="verbose">Verbose</label>
-                        </div>
-                        <br>
-
-                        <!-- Tone Options -->
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="tone" id="casual" value="casual" checked>
-                            <label class="form-check-label" for="casual">Casual</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="tone" id="funny" value="funny">
-                            <label class="form-check-label" for="funny">Funny</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="tone" id="professional"
-                                value="professional">
-                            <label class="form-check-label" for="professional">Professional</label>
-                        </div>
-                    </form>
-
-                    <button class="btn btn-primary mb-3 mt-3" onclick="answer()">Generate Answers</button><br>
-                    <button class="btn btn-success mb-3" onclick="answer('yes')">Generate Answers for Yes</button><br>
-                    <button class="btn btn-danger mb-3" onclick="answer('no')">Generate Answers for No</button><br>
-                    <button class="btn btn-warning mb-3" onclick="answer('maybe')">Generate Answers for Maybe</button><br>
-                </div>
+    <div class="row">
+        <div class="col">
+            <div class="form-group">
+                <label for="keywords"><h4>Keywords:</h4></label>
+                <textarea id="keywords" class="form-control" rows="9"></textarea>
             </div>
         </div>
+        <div class="col" style="display: flex; align-items: center;">
+            <div>
 
-        <h2 class="mt-4">Suggested Answers</h2>
-        <div id="answers" class="list-group"></div>
+                <form id="answer-options">
+                    <!-- Verbosity Options -->
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="verbosity" id="concise" value="concise"
+                            checked>
+                        <label class="form-check-label" for="concise">Concise</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="verbosity" id="verbose" value="verbose">
+                        <label class="form-check-label" for="verbose">Verbose</label>
+                    </div>
+                    <br>
+
+                    <!-- Tone Options -->
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="tone" id="casual" value="casual" checked>
+                        <label class="form-check-label" for="casual">Casual</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="tone" id="funny" value="funny">
+                        <label class="form-check-label" for="funny">Funny</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="tone" id="professional"
+                            value="professional">
+                        <label class="form-check-label" for="professional">Professional</label>
+                    </div>
+                </form>
+
+                <button class="btn btn-primary mb-3 mt-3" onclick="answer()">Suggest</button><br>
+            </div>
+        </div>
     </div>
+
+    <h4 class="mt-4">Suggestions</h4>
+    <div id="answers" class="list-group"></div>
+</div>
+<div style="max-width: 800px;" class="mx-auto mt-5">
+    <h4>Previous Answers</h4>
+    <div id="previous-answers" class="list-group"></div>
+    <!-- Delete Chat History Button -->
+    <button class="btn btn-danger mt-3" onclick="deleteChatHistory()">Delete Chat History</button>
 </div>
 
 <script>
@@ -233,12 +227,12 @@
         let recognition = new (window.webkitSpeechRecognition || SpeechRecognition)();
         recordButton.onclick = function () {
             recordButton.onclick = startRecord;
-            recordButton.textContent = "Record question";
+            recordButton.textContent = "Listen";
             recording.textContent = ""
             recognition.stop();
         }
-        recordButton.textContent = "Stop Recording";
-        recording.textContent = "Recording..."
+        recordButton.textContent = "Stop Listening";
+        recording.textContent = "Listening..."
         recognition.onresult = function (e) {
             let result = "";
             for (let r of e.results) result += r[0].transcript + "\n";
