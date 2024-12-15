@@ -213,7 +213,7 @@ def send_text():
         },
         {
             "role": "system",
-            "content": "The answer should be " + (request.form.get("tone") or "") + " and " + (request.form.get("verbosity") or "")
+            "content": "The phrase should be " + (request.form.get("tone") or "") + " and " + (request.form.get("verbosity") or "")
         },
     ]
     if question:
