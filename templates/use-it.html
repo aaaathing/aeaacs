@@ -1,14 +1,12 @@
 {% extends 'base.html' %}
 
 {% block nav %}
-<div style="margin-left: auto;">
-    <p>
-        Username: {{ current_user.username }}
-        <a href="/edit">Edit info</a>
-    </p>
+<div style="margin-left: auto;" class="me-3 mt-3">
+    {{ current_user.username }}
+    <a href="/edit">Edit info</a>
 
-    <form action="/logout" method="POST">
-        <button class="btn btn-danger">Sign out</button>
+    <form action="/logout" method="POST" style="display: inline;">
+        <a onclick="this.parentElement.submit(); return false" href="">Sign out</a>
     </form>
 </div>
 {% endblock %}
@@ -39,22 +37,30 @@
         color: #e74c3c;
         /* Change color on hover */
     }
+
+    .hidden {
+        display: none;
+    }
 </style>
 
 <div style="max-width: 800px;" class="mx-auto">
 
     <button class="btn btn-primary mb-3" onclick="introduce()">Introduce Yourself</button><br>
 
-    <button id="recordButton" class="btn btn-secondary mb-3">Listen</button>
+    <button id="recordButton" class="btn btn-secondary">Listen</button>
     <span id="recording"></span><br>
+    <small>Listen to what others are saying</small><br>
     <textarea id="question" class="form-control" rows="3"></textarea>
     
 
-    <div class="row">
+    <div class="row mt-3">
         <div class="col">
             <div class="form-group">
-                <label for="keywords"><h4>Keywords:</h4></label>
-                <textarea id="keywords" class="form-control" rows="9"></textarea>
+                <label for="keywords">
+                    <h4 class="mb-0">Keywords:</h4>
+                    <small>For generating Suggestions</small>
+                </label>
+                <textarea id="keywords" class="form-control" rows="5"></textarea>
             </div>
         </div>
         <div class="col" style="display: flex; align-items: center;">
@@ -94,10 +100,10 @@
         </div>
     </div>
 
-    <h4 class="mt-4">Suggestions</h4>
+    <h4 class="mt-4 hidden" id="suggestions-header">Suggestions</h4>
     <div id="answers" class="list-group"></div>
 </div>
-<div style="max-width: 800px;" class="mx-auto mt-5">
+<div style="max-width: 800px;" class="mx-auto mt-5 hidden" id="previous-answers-options">
     <h4>Previous Answers</h4>
     <div id="previous-answers" class="list-group"></div>
     <!-- Delete Chat History Button -->
@@ -126,6 +132,7 @@
                     ${removeBad(answer)}
                 </button>
             `, "");
+            document.querySelector("#suggestions-header").classList.remove("hidden")
         } else {
             alert("Error fetching answers.");
         }
@@ -136,49 +143,58 @@
     }
 
     async function sendText(button) {
-        let formData = new FormData();
         let question = document.querySelector("#question").value;
-        let chosenAnswer = button.textContent;
-        formData.append("question", question);
-        formData.append("chosen_answer", chosenAnswer);
-        let response = await fetch("/api/save_answer", { method: "POST", body: formData });
-        let data = await response.json();
-        if (data.success) {
+        if(question) {
+            let formData = new FormData();
+            let chosenAnswer = button.textContent;
+            formData.append("question", question);
+            formData.append("chosen_answer", chosenAnswer);
+            let response = await fetch("/api/save_answer", { method: "POST", body: formData });
+            let data = await response.json();
+            if (!data.success) {
+                alert("Error saving the answer.")
+                return
+            }
             // Prepend the new answer to the previous answers list
             addPreviousAnswer({
                 answer_id: data.answer_id,
                 question: question,
                 chosen_answer: chosenAnswer
             });
-            // Clear the suggested answers
-            document.querySelector("#answers").innerHTML = '';
-            // Optionally, clear the question textarea
-            document.querySelector("#question").value = '';
-        } else {
-            alert("Error saving the answer.");
         }
+        // Clear the suggested answers
+        document.querySelector("#suggestions-header").classList.add("hidden")
+        document.querySelector("#answers").innerHTML = '';
+        // Optionally, clear the question textarea
+        document.querySelector("#question").value = '';
+        document.querySelector("#keywords").value = '';
+        
     }
 
     function addPreviousAnswer(answer) {
         document.querySelector("#previous-answers")
             .insertAdjacentHTML("afterbegin", `
-            <div class="list-group-item" data-answer-id="${removeBad(answer.answer_id)}" onclick="speak(this.textContent)">
+            <div class="list-group-item" data-answer-id="${removeBad(answer.answer_id)}">
                 <button class="delete-button" onclick="deleteAnswer('${removeBad(answer.answer_id)}')">&times;</button>
                 <strong>${removeBad(answer.question)}</strong><br>
                 ${removeBad(answer.chosen_answer)}
             </div>
         `);
+        document.querySelector("#previous-answers-options").classList.remove("hidden")
     }
 
     fetch("/api/previous_answers").then(r => r.json()).then(answers => {
-        document.querySelector("#previous-answers")
-            .innerHTML = answers.reduce((a, answer) => a + `
-            <div class="list-group-item" data-answer-id="${removeBad(answer.answer_id)}" onclick="speak(this.textContent)">
-                <button class="delete-button" onclick="deleteAnswer('${removeBad(answer.answer_id)}')">&times;</button>
-                <strong>${removeBad(answer.question)}</strong><br>
-                ${removeBad(answer.chosen_answer)}
-            </div>
-            `, "");
+        if(answers.length){
+            document.querySelector("#previous-answers-options").classList.remove("hidden")
+            document.querySelector("#previous-answers")
+                .innerHTML = answers.reduce((a, answer) => a + `
+                <div class="list-group-item" data-answer-id="${removeBad(answer.answer_id)}">
+                    <button class="delete-button" onclick="deleteAnswer('${removeBad(answer.answer_id)}')">&times;</button>
+                    <strong>${removeBad(answer.question)}</strong><br>
+                    ${removeBad(answer.chosen_answer)}
+                </div>
+                `, "");
+        }
     });
 
     async function deleteAnswer(answerId) {
