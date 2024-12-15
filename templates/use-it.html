@@ -105,18 +105,19 @@
 </div>
 
 <script>
-    async function answer(whatYouWantToSay) {
+    async function answer() {
         let formData = new FormData();
         let question = document.querySelector("#question").value.trim();
-        if (!question) {
-            alert("Please enter a question.");
+        let keywords = document.querySelector("#keywords").value
+        if (!question && !keywords) {
+            alert("Please enter a question or keyword.");
             return;
         }
         let form = document.querySelector("#answer-options")
         formData.append("question", question);
         formData.append("verbosity", form.elements.verbosity.value);
         formData.append("tone", form.elements.tone.value);
-        formData.append("whatYouWantToSay", whatYouWantToSay);
+        formData.append("whatYouWantToSay", keywords);
         let response = await fetch("/api/send_text", { method: "POST", body: formData });
         let answers = await response.json();
         if (answers.success) {

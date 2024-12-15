@@ -213,17 +213,27 @@ def send_text():
         },
         {
             "role": "system",
-            "content": "The answer should be " + (request.form.get("tone") or "") + " and " + (request.form.get("verbosity") or "") + ". The following is the question."
-        },
-        {
-            "role": "user",
-            "content": question
+            "content": "The answer should be " + (request.form.get("tone") or "") + " and " + (request.form.get("verbosity") or "")
         },
     ]
+    if question:
+        messages.append({
+            "role": "system",
+            "content": "This is the question."
+        })
+        messages.append({
+            "role": "user",
+            "content": question
+        })
+    
     if request.form.get("whatYouWantToSay"):
         messages.append({
 			"role": "system",
-			"content": "The user wants to say " + (request.form.get("whatYouWantToSay") or "")
+			"content": "Here are some keywords that you want to say:"
+		})
+        messages.append({
+			"role": "user",
+			"content": request.form.get("whatYouWantToSay")
 		})
     completion = client.chat.completions.create(
         model="gpt-4o-mini",
